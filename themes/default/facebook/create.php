@@ -1,6 +1,7 @@
 <?php if (!empty($error)): ?>
 	<p class="red" style="font-weight: bold"><?php echo htmlspecialchars($error) ?></p>
 <?php endif ?>
+<center>
 	  <div id="fb-root"></div>
       <script>
         window.fbAsyncInit = function() {
@@ -39,3 +40,5 @@
 		  ]" 
         data-redirect-uri="http://www.agonyro.net/fluxcptest/?module=facebook&action=create&fb_return=return">
       </div>
+</div>
+</center>

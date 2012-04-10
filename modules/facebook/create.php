@@ -62,21 +62,22 @@ if(!empty($submit))
 			$sth->execute(array($username));
 			$res = $sth->fetch();
 			
+			
 			if ($res) {
 				throw new Exception('Username is already taken');
-			}	
+			}
+		
 
-			
 			if (!Flux::config('AllowDuplicateEmails')) {
 				$sql = "SELECT email FROM {$loginDB}.login WHERE email = ? LIMIT 1";
 				$sth = $server->connection->getStatement($sql);
 				$sth->execute(array($email));
+				echo "Hello";
 
 				$res = $sth->fetch();
 				if ($res) {
 					throw new Exception('E-mail address is already in use');
 				}
-				echo "Hellod";
 			}
 			
 			if (Flux::config('UseMD5')) {
@@ -99,9 +100,10 @@ if(!empty($submit))
 				$sth->execute(array($response['user_id'],$idres->account_id, $username, $password,$_SERVER['REMOTE_ADDR']));
 			}
 			else {
-				echo "Uhmm";
+				throw new Exception("Error in recording the facebook account in the database. Kindly inform the administrator about this error.");
 			}
-			$error = "Registered";
+			$error = "You have successfully registered.";
+			$this->redirect('?module=account&action=login');
 	}
 	catch(Exception $e)
 	{
