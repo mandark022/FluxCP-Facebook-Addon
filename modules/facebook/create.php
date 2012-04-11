@@ -1,12 +1,64 @@
 <?php if (!defined('FLUX_ROOT')) exit; 
+require_once("facebook.php");
 include 'FBRegistration.php';
 $reg_tbl = Flux::config('FluxTables.REGISTER');
 $api_id = Flux::config('FB_API_KEY');
+$api_secret = Flux::config('FB_API_SECRET_KEY');
 $loginDB = $server->loginDatabase;	
 $serverNames = $this->getServerNames();
 $error = "";
 $submit = $params->get('fb_return');
-if(!empty($submit))
+
+
+ $fb_config = array();
+ $fb_config['appId'] = $api_id;
+ $fb_config['secret'] = $api_secret;
+ $fb_config['fileUpload'] = false; // optional
+ $fb_config['cookie'] = true; // optional
+  
+ $fb = new Facebook($fb_config); 
+
+ $loginURL = $fb->getLoginUrl(array( 'scope' => 'email'));
+ try
+ {
+	if(!$fb->getUser())
+	{
+		header("Location: ".$loginURL);
+	}
+	else
+	{
+		try
+		{
+			$token  = $fb->getAccessToken();
+			$fb->setAccessToken($token);
+			$resp =  $fb->api('/me','GET');
+			if(!$resp['verified'])
+			{
+				throw new Exception("Email Address not verified.");
+			}
+		}
+		catch(FacebookException $e)
+		{
+			try
+			{
+				throw new Exception($e->getMessage());
+			}
+			catch(Exception $e)
+			{				
+				$error = $e->getMessage();
+			}
+		}
+	 }
+}
+catch(Exception $e)
+{
+ $error = $e->getMessage();
+}
+
+
+
+
+if(!empty($submit) && empty($error))
 {
 	try
 	{	
@@ -72,8 +124,6 @@ if(!empty($submit))
 				$sql = "SELECT email FROM {$loginDB}.login WHERE email = ? LIMIT 1";
 				$sth = $server->connection->getStatement($sql);
 				$sth->execute(array($email));
-				echo "Hello";
-
 				$res = $sth->fetch();
 				if ($res) {
 					throw new Exception('E-mail address is already in use');
